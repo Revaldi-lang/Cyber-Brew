@@ -1,0 +1,77 @@
+{% extends 'layout.html' %}
+
+{% block title %}Cyber Brew Coffee - Menu Kopi{% endblock %}
+
+{% block content %}
+<section class="container">
+    <div class="section-header">
+        <h2>Katalog Menu Kopi</h2>
+        <p>Pilih kopi premium favorit Anda dari biji pilihan terbaik dan racikan barista profesional kami.</p>
+    </div>
+    
+    <div class="products-grid">
+        {% for product in products %}
+            <div class="product-card">
+                <div class="product-image-container">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-desc">{{ product.description }}</p>
+                    
+                    <div class="product-footer" style="margin-bottom: 1.5rem;">
+                        <span class="product-price">Rp {{ "{:,}".format(product.price).replace(",", ".") }}</span>
+                        <button class="btn btn-primary btn-sm" onclick="addToCart({{ product.id }}, '{{ product.name }}', {{ product.price }})">
+                            + Tambah
+                        </button>
+                    </div>
+                    
+                    <!-- Review Section (Stored XSS Target) -->
+                    <div class="review-section" id="reviews">
+                        <h4>Ulasan Pelanggan</h4>
+                        
+                        <div class="review-list">
+                            {% if product.reviews %}
+                                {% for review in product.reviews %}
+                                    <div class="review-item">
+                                        <div class="review-header">
+                                            <span class="review-user">@{{ review.username }}</span>
+                                            <span>{{ review.review_date }}</span>
+                                        </div>
+                                        
+                                        <!-- XSS DEMO RENDER -->
+                                        {% if security_mode %}
+                                            <!-- Mode Aman: Menampilkan teks mentah secara aman (HTML disaring/escape) -->
+                                            <p class="review-comment">{{ review.comment }}</p>
+                                        {% else %}
+                                            <!-- Mode Rentan: Merender HTML secara langsung, memungkinkan Stored XSS -->
+                                            <p class="review-comment">{{ review.comment | safe }}</p>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p style="color: var(--text-muted); font-size: 0.85rem; font-style: italic; margin-bottom: 1rem;">Belum ada ulasan.</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Review Form -->
+                        {% if user %}
+                            <form action="/add_review" method="POST" class="review-form">
+                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="text" name="comment" class="form-control" placeholder="Tulis ulasan kopi ini..." required style="padding: 0.5rem 0.8rem; font-size: 0.85rem; border-radius: 4px;">
+                                    <button type="submit" class="btn btn-primary btn-sm" style="padding: 0.5rem 1rem;">Kirim</button>
+                                </div>
+                            </form>
+                        {% else %}
+                            <p style="color: var(--text-muted); font-size: 0.8rem; text-align: center; border: 1px dashed var(--border); padding: 0.5rem; border-radius: 4px;">
+                                Silakan <a href="/login" style="font-weight: 600;">Login</a> untuk menulis ulasan.
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'layout.html' %}
+
+{% block title %}Cyber Brew Coffee - Keranjang Belanja{% endblock %}
+
+{% block content %}
+<section class="container">
+    <div class="section-header">
+        <h2>Keranjang Belanja Anda</h2>
+        <p>Periksa kembali kopi pilihan Anda sebelum memproses checkout pesanan.</p>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2.5rem; align-items: start;">
+        <!-- Left: Cart Items List -->
+        <div id="cart-items-container" style="background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2rem;">
+            <!-- Rendered dynamically by main.js -->
+        </div>
+        
+        <!-- Right: Summary Card -->
+        <div id="cart-summary-container">
+            <!-- Rendered dynamically by main.js -->
+        </div>
+    </div>
+</section>
+
+<!-- CSS Responsive Override for Grid on mobile -->
+<style>
+@media (max-width: 900px) {
+    section > div {
+        grid-template-columns: 1fr !important;
+    }
+    #cart-summary-container {
+        max-width: 100%;
+    }
+}
+</style>
+{% endblock %}

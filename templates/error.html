@@ -1,0 +1,23 @@
+{% extends 'layout.html' %}
+
+{% block title %}Cyber Brew Coffee - Error{% endblock %}
+
+{% block content %}
+<section class="container" style="text-align: center; padding: 6rem 2rem;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 3.5rem; box-shadow: 0 15px 35px rgba(0,0,0,0.5);">
+        <div style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(255, 51, 102, 0.1); border: 2px solid var(--insecure-red); display: flex; justify-content: center; align-items: center; margin: 0 auto 2rem; color: var(--insecure-red);">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 40px; height: 40px;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z" />
+            </svg>
+        </div>
+        <h2 style="font-size: 2rem; margin-bottom: 1rem; color: var(--text-light);">Akses Ditolak / Error</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1rem;">
+            {{ message }}
+        </p>
+        <div style="display: flex; justify-content: center; gap: 1rem;">
+            <a href="javascript:history.back()" class="btn btn-secondary">Kembali</a>
+            <a href="/" class="btn btn-primary">Kembali ke Beranda</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

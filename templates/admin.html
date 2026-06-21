@@ -1,0 +1,187 @@
+{% extends 'layout.html' %}
+
+{% block title %}Cyber Brew Coffee - Admin Dashboard{% endblock %}
+
+{% block content %}
+<section class="container">
+    <div class="dashboard-grid">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="profile-card">
+                <div class="profile-avatar" style="background-color: var(--accent); color: var(--bg-dark);">
+                    A
+                </div>
+                <h3 class="profile-name">{{ user.username }}</h3>
+                <span class="role-badge admin">{{ user.role }}</span>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="/admin" class="sidebar-link active">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px;">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+                        </svg>
+                        Admin Console
+                    </a>
+                </li>
+                <li>
+                    <a href="/logout" class="sidebar-link" style="color: var(--insecure-red);">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px;">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                        </svg>
+                        Logout
+                    </a>
+                </li>
+            </ul>
+        </aside>
+        
+        <!-- Main Admin Content -->
+        <div class="dashboard-content">
+            <div class="dashboard-header">
+                <h2>Admin Console (RBAC & Hashing Demo)</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">Halaman ini hanya boleh diakses oleh pengguna dengan peran **Admin**.</p>
+            </div>
+            
+            <!-- Database Viewer Section (Visualizing Password Hashing) -->
+            <div style="margin-bottom: 3.5rem;">
+                <h3 style="margin-bottom: 1rem; color: var(--accent); font-size: 1.4rem;">📁 Database Viewer: Tabel `users`</h3>
+                <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1rem;">
+                    Menunjukkan bagaimana kata sandi disimpan di database SQLite.
+                </p>
+                
+                <div class="db-table-wrapper">
+                    <table class="db-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Password (Stored Value)</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                                <tr>
+                                    <td>{{ u.id }}</td>
+                                    <td style="font-weight: 600; color: var(--text-light);">@{{ u.username }}</td>
+                                    <td class="password-cell">{{ u.password }}</td>
+                                    <td>
+                                        <span class="role-badge {% if u.role == 'admin' %}admin{% else %}user{% endif %}">
+                                            {{ u.role }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Customer Orders Section -->
+            <div style="margin-bottom: 3.5rem;">
+                <h3 style="margin-bottom: 1rem; color: var(--accent); font-size: 1.4rem;">🛒 Daftar Seluruh Pesanan Pelanggan</h3>
+                
+                <div class="db-table-wrapper">
+                    <table class="db-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Username</th>
+                                <th>Item Kopi</th>
+                                <th>Tanggal</th>
+                                <th>Total Harga</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if orders %}
+                                {% for o in orders %}
+                                    <tr>
+                                        <td>#{{ o.id }}</td>
+                                        <td style="font-weight:600; color: var(--primary);">@{{ o.username }} (ID: {{ o.user_id }})</td>
+                                        <td>{{ o.items }}</td>
+                                        <td>{{ o.order_date }}</td>
+                                        <td style="font-weight:600; color: var(--accent);">Rp {{ "{:,}".format(o.total_price).replace(",", ".") }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-muted); font-style: italic; padding: 2rem;">Belum ada pesanan masuk.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- XSS Cookie Stealing Intrusion Logs -->
+            <div class="log-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="color: var(--insecure-red); font-size: 1.4rem; display: flex; align-items: center; gap: 0.5rem;">
+                        🚨 Intrusion Detector: Stolen Cookie Logs
+                    </h3>
+                    {% if attack_log %}
+                        <a href="/clear-attack-logs" class="btn btn-danger btn-sm">Bersihkan Log</a>
+                    {% endif %}
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.2rem;">
+                    Menangkap request yang dikirimkan oleh payload XSS (Cross-Site Scripting) dari browser korban ke endpoint <code style="color: var(--text-light);">/log-cookie</code>.
+                </p>
+                
+                <div class="log-list">
+                    {% if attack_log %}
+                        {% for log in attack_log %}
+                            <div class="log-card">
+                                <div class="log-header">
+                                    <span class="log-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px;">
+                                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                                        </svg>
+                                        SERANGAN XSS BERHASIL: Cookie Tercuri
+                                    </span>
+                                    <span>{{ log.timestamp }}</span>
+                                </div>
+                                <div style="font-size: 0.85rem; margin-top: 0.5rem;">
+                                    <strong>IP Penyerang/Korban:</strong> {{ log.ip }} <br>
+                                    <strong>User-Agent:</strong> {{ log.user_agent }}
+                                </div>
+                                <div class="log-cookie-content">
+                                    {{ log.cookie }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="text-align: center; border: 1px dashed var(--border); padding: 3rem 0; border-radius: 8px; color: var(--text-muted);">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" style="width: 48px; height: 48px; margin-bottom: 1rem; color: var(--border);">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p>Tidak ada aktivitas mencurigakan yang terdeteksi.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Info Lab Keamanan (RBAC) -->
+            <div style="margin-top: 3rem; padding: 1.2rem; background-color: rgba(255, 255, 255, 0.02); border: 1px dashed var(--border); border-radius: 6px; font-size: 0.8rem; color: var(--text-muted);">
+                <strong style="color: var(--accent); display: block; margin-bottom: 0.5rem;">💡 Info Uji Keamanan (RBAC & Cookie Security):</strong>
+                {% if not SECURITY_MODE %}
+                    <p style="color: var(--insecure-red); margin-bottom: 0.5rem;">
+                        <strong>RBAC Lemah & Cookies Tidak Aman:</strong>
+                    </p>
+                    <ul style="padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; list-style-type: disc;">
+                        <li><strong>RBAC Bypass:</strong> Anda dapat mengakses halaman ini meskipun menggunakan akun user biasa dengan cara memanipulasi cookie di browser Anda: tambahkan cookie <code style="color: var(--text-light);">session_role=admin</code> atau ubah <code style="color: var(--text-light);">session_user=admin</code>.</li>
+                        <li><strong>Pencurian Cookie via XSS:</strong> Karena cookie session tidak memiliki flag <code style="color: var(--text-light);">HttpOnly</code>, JavaScript penyerang dapat membaca cookie ini. Cobalah menyisipkan ulasan XSS di halaman Menu, lalu buka halaman Menu tersebut menggunakan akun Admin. Periksa bagian <strong>Cookie Logs</strong> di atas untuk melihat cookie Admin yang tercuri!</li>
+                    </ul>
+                {% else %}
+                    <p style="color: var(--secure-green); margin-bottom: 0.5rem;">
+                        <strong>RBAC Ketat & Cookies Terlindungi:</strong>
+                    </p>
+                    <ul style="padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; list-style-type: disc;">
+                        <li><strong>RBAC Aman:</strong> Server memvalidasi data user dan role langsung dari session terenkripsi di sisi server. Memanipulasi cookie di browser client tidak akan memberikan hak akses admin.</li>
+                        <li><strong>HttpOnly Cookie Enforced:</strong> Cookie ditandai dengan flag <code style="color: var(--text-light);">HttpOnly</code>, yang membuat browser melarang JavaScript untuk membacanya (<code style="color: var(--text-light);">document.cookie</code> kosong). Serangan XSS tidak akan bisa mencuri cookie session Anda.</li>
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'layout.html' %}
+
+{% block title %}Cyber Brew Coffee - Dashboard Pelanggan{% endblock %}
+
+{% block content %}
+<section class="container">
+    <div class="dashboard-grid">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="profile-card">
+                <div class="profile-avatar">
+                    {{ user.username[0].upper() }}
+                </div>
+                <h3 class="profile-name">{{ user.username }}</h3>
+                <span class="role-badge user">{{ user.role }}</span>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="/dashboard" class="sidebar-link active">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px;">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                        </svg>
+                        Profil & Pesanan
+                    </a>
+                </li>
+                <li>
+                    <a href="/logout" class="sidebar-link" style="color: var(--insecure-red);">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px;">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                        </svg>
+                        Logout
+                    </a>
+                </li>
+            </ul>
+        </aside>
+        
+        <!-- Main Dashboard Content -->
+        <div class="dashboard-content">
+            <div class="dashboard-header">
+                <h2>Riwayat Pemesanan</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">Daftar transaksi pembelian kopi yang telah Anda lakukan.</p>
+            </div>
+            
+            <div class="order-list">
+                {% if orders %}
+                    {% for order in orders %}
+                        <div class="order-card">
+                            <div class="order-header">
+                                <span class="order-id">Pemesanan #{{ order.id }}</span>
+                                <span>{{ order.order_date }}</span>
+                            </div>
+                            <div class="order-body">
+                                <div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.2rem;">Menu yang dipesan:</div>
+                                    <div class="order-items">{{ order.items }}</div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem;">Pemesan: <strong style="color: var(--primary);">@{{ order.username }}</strong> (User ID: {{ order.user_id }})</div>
+                                </div>
+                                <div class="order-total">
+                                    Rp {{ "{:,}".format(order.total_price).replace(",", ".") }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; padding: 3rem 0; color: var(--text-muted);">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" style="width: 48px; height: 48px; margin-bottom: 1rem; color: var(--border);">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                        </svg>
+                        <p>Belum ada riwayat pesanan.</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Info Lab Keamanan (IDOR) -->
+            <div style="margin-top: 3rem; padding: 1.2rem; background-color: rgba(255, 255, 255, 0.02); border: 1px dashed var(--border); border-radius: 6px; font-size: 0.8rem; color: var(--text-muted);">
+                <strong style="color: var(--accent); display: block; margin-bottom: 0.5rem;">💡 Info Uji Keamanan (IDOR):</strong>
+                {% if not SECURITY_MODE %}
+                    <p style="color: var(--insecure-red); margin-bottom: 0.5rem;">
+                        <strong>IDOR Aktif:</strong> Server tidak memvalidasi kepemilikan data pesanan di backend.
+                    </p>
+                    <p>
+                        Anda dapat melihat riwayat pesanan user lain dengan menambahkan parameter URL query <code style="background-color: var(--bg-dark); padding: 2px 4px; border-radius: 3px;">?user_id=X</code> (contoh: <code style="color: var(--text-light);">/dashboard?user_id=1</code> untuk melihat pesanan admin, atau <code style="color: var(--text-light);">/dashboard?user_id=2</code> untuk customer).
+                    </p>
+                {% else %}
+                    <p style="color: var(--secure-green);">
+                        <strong>IDOR Terproteksi:</strong> Server memaksa query riwayat pesanan hanya berdasarkan User ID yang terikat pada session terenkripsi di server. Parameter <code style="background-color: var(--bg-dark); padding: 2px 4px; border-radius: 3px;">?user_id=X</code> diabaikan sepenuhnya.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
