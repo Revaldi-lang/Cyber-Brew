@@ -2,7 +2,7 @@ import os
 import sqlite3
 import base64
 import bcrypt
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, make_response, session, flash, jsonify
 
 import config
@@ -24,6 +24,53 @@ else:
         SESSION_COOKIE_SECURE=False,
         SESSION_COOKIE_SAMESITE=None
     )
+
+# Configure Session Timeout (30 seconds)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=30)
+
+@app.before_request
+def check_session_timeout():
+    ignored_routes = ['static', 'login', 'register', 'logout', 'log_cookie']
+    if request.endpoint in ignored_routes:
+        return
+
+    now = datetime.now().timestamp()
+
+    if config.SECURITY_MODE:
+        session.permanent = True
+        if 'username' in session:
+            last_active = session.get('last_active')
+            if last_active and now - last_active > 30:
+                session.clear()
+                flash("Sesi Anda telah berakhir (30 detik tidak aktif).", "warning")
+                return redirect(url_for('login'))
+            session['last_active'] = now
+    else:
+        username = request.cookies.get('session_user')
+        if username:
+            last_active_cookie = request.cookies.get('session_last_active')
+            if last_active_cookie:
+                try:
+                    elapsed = now - float(last_active_cookie)
+                    if elapsed > 30:
+                        resp = make_response(redirect(url_for('login')))
+                        resp.delete_cookie('session_user')
+                        resp.delete_cookie('session_role')
+                        resp.delete_cookie('session_last_active')
+                        flash("Sesi Anda telah berakhir (30 detik tidak aktif).", "warning")
+                        return resp
+                except ValueError:
+                    pass
+
+@app.after_request
+def update_last_active(response):
+    # Update last active time for cookie in insecure mode
+    if not config.SECURITY_MODE:
+        username = request.cookies.get('session_user')
+        if username:
+            # Only set last active if the user is currently authenticated
+            response.set_cookie('session_last_active', str(datetime.now().timestamp()))
+    return response
 
 # Attack log for XSS cookie stealing demonstration
 attack_log = []
@@ -369,6 +416,7 @@ def login():
                     resp = make_response(redirect(url_for('index')))
                     resp.set_cookie('session_user', user_record['username'])
                     resp.set_cookie('session_role', user_record['role'])
+                    resp.set_cookie('session_last_active', str(datetime.now().timestamp()))
                     conn.close()
                     flash(f"Login sukses (Insecure)! Selamat datang {user_record['username']}.", "success")
                     return resp
@@ -398,6 +446,7 @@ def login():
                     # Secure login successful! Set signed session cookies (with HttpOnly, Secure)
                     session['username'] = user_record['username']
                     session['role'] = user_record['role']
+                    session['last_active'] = datetime.now().timestamp()
                     flash(f"Login sukses! Selamat datang {user_record['username']}.", "success")
                     return redirect(url_for('index'))
             
@@ -451,6 +500,7 @@ def logout():
     # Insecure logout: delete plain cookies
     resp.delete_cookie('session_user')
     resp.delete_cookie('session_role')
+    resp.delete_cookie('session_last_active')
     
     # Secure logout: clear Flask session
     session.clear()
