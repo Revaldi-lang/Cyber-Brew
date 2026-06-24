@@ -72,22 +72,7 @@
                 {% endif %}
             </div>
             
-            <!-- Info Lab Keamanan (IDOR) -->
-            <div style="margin-top: 3rem; padding: 1.2rem; background-color: rgba(255, 255, 255, 0.02); border: 1px dashed var(--border); border-radius: 6px; font-size: 0.8rem; color: var(--text-muted);">
-                <strong style="color: var(--accent); display: block; margin-bottom: 0.5rem;">💡 Info Uji Keamanan (IDOR):</strong>
-                {% if not SECURITY_MODE %}
-                    <p style="color: var(--insecure-red); margin-bottom: 0.5rem;">
-                        <strong>IDOR Aktif:</strong> Server tidak memvalidasi kepemilikan data pesanan di backend.
-                    </p>
-                    <p>
-                        Anda dapat melihat riwayat pesanan user lain dengan menambahkan parameter URL query <code style="background-color: var(--bg-dark); padding: 2px 4px; border-radius: 3px;">?user_id=X</code> (contoh: <code style="color: var(--text-light);">/dashboard?user_id=1</code> untuk melihat pesanan admin, atau <code style="color: var(--text-light);">/dashboard?user_id=2</code> untuk customer).
-                    </p>
-                {% else %}
-                    <p style="color: var(--secure-green);">
-                        <strong>IDOR Terproteksi:</strong> Server memaksa query riwayat pesanan hanya berdasarkan User ID yang terikat pada session terenkripsi di server. Parameter <code style="background-color: var(--bg-dark); padding: 2px 4px; border-radius: 3px;">?user_id=X</code> diabaikan sepenuhnya.
-                    </p>
-                {% endif %}
-            </div>
+
         </div>
     </div>
 </section>

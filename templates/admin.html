@@ -160,27 +160,7 @@
                 </div>
             </div>
             
-            <!-- Info Lab Keamanan (RBAC) -->
-            <div style="margin-top: 3rem; padding: 1.2rem; background-color: rgba(255, 255, 255, 0.02); border: 1px dashed var(--border); border-radius: 6px; font-size: 0.8rem; color: var(--text-muted);">
-                <strong style="color: var(--accent); display: block; margin-bottom: 0.5rem;">💡 Info Uji Keamanan (RBAC & Cookie Security):</strong>
-                {% if not SECURITY_MODE %}
-                    <p style="color: var(--insecure-red); margin-bottom: 0.5rem;">
-                        <strong>RBAC Lemah & Cookies Tidak Aman:</strong>
-                    </p>
-                    <ul style="padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; list-style-type: disc;">
-                        <li><strong>RBAC Bypass:</strong> Anda dapat mengakses halaman ini meskipun menggunakan akun user biasa dengan cara memanipulasi cookie di browser Anda: tambahkan cookie <code style="color: var(--text-light);">session_role=admin</code> atau ubah <code style="color: var(--text-light);">session_user=admin</code>.</li>
-                        <li><strong>Pencurian Cookie via XSS:</strong> Karena cookie session tidak memiliki flag <code style="color: var(--text-light);">HttpOnly</code>, JavaScript penyerang dapat membaca cookie ini. Cobalah menyisipkan ulasan XSS di halaman Menu, lalu buka halaman Menu tersebut menggunakan akun Admin. Periksa bagian <strong>Cookie Logs</strong> di atas untuk melihat cookie Admin yang tercuri!</li>
-                    </ul>
-                {% else %}
-                    <p style="color: var(--secure-green); margin-bottom: 0.5rem;">
-                        <strong>RBAC Ketat & Cookies Terlindungi:</strong>
-                    </p>
-                    <ul style="padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; list-style-type: disc;">
-                        <li><strong>RBAC Aman:</strong> Server memvalidasi data user dan role langsung dari session terenkripsi di sisi server. Memanipulasi cookie di browser client tidak akan memberikan hak akses admin.</li>
-                        <li><strong>HttpOnly Cookie Enforced:</strong> Cookie ditandai dengan flag <code style="color: var(--text-light);">HttpOnly</code>, yang membuat browser melarang JavaScript untuk membacanya (<code style="color: var(--text-light);">document.cookie</code> kosong). Serangan XSS tidak akan bisa mencuri cookie session Anda.</li>
-                    </ul>
-                {% endif %}
-            </div>
+
         </div>
     </div>
 </section>

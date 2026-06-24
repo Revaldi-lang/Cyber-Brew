@@ -78,18 +78,7 @@
                 <div class="footer-copy">&copy; 2026 Cyber Brew Coffee. Tugas UAS Keamanan Jaringan.</div>
             </div>
             
-            <!-- Security Status Widget -->
-            {% if SECURITY_MODE %}
-                <div class="security-status-widget secure" title="Aplikasi berjalan dengan pengamanan TLS, Parameterized Queries, Bcrypt, dan Secure Cookie.">
-                    <span class="status-dot"></span>
-                    <span class="status-text">SECURITY: ENFORCED (HTTPS)</span>
-                </div>
-            {% else %}
-                <div class="security-status-widget insecure" title="Aplikasi berjalan dengan kerentanan SQL Injection, XSS, Plaintext Password, dan Insecure Cookie.">
-                    <span class="status-dot"></span>
-                    <span class="status-text">SECURITY: VULNERABLE (DEMO)</span>
-                </div>
-            {% endif %}
+
         </div>
     </footer>
 

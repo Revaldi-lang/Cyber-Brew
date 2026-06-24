@@ -26,17 +26,7 @@
             Sudah punya akun? <a href="/login" style="font-weight: 600;">Login Disini</a>
         </div>
         
-        <!-- Info Lab Keamanan (Hashing) -->
-        <div style="margin-top: 2rem; padding: 1.2rem; background-color: rgba(255, 255, 255, 0.02); border: 1px dashed var(--border); border-radius: 6px; font-size: 0.8rem; color: var(--text-muted);">
-            <strong style="color: var(--accent); display: block; margin-bottom: 0.5rem;">💡 Info Uji Keamanan:</strong>
-            <ul style="padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem;">
-                {% if not SECURITY_MODE %}
-                    <li style="color: var(--insecure-red);"><strong>Password Hashing Nonaktif:</strong> Akun baru yang didaftarkan akan disimpan dalam bentuk <strong>Plain-Text</strong> (teks polos) di database.</li>
-                {% else %}
-                    <li style="color: var(--secure-green);"><strong>Password Hashing Aktif:</strong> Akun baru akan di-hash menggunakan algoritma <strong>Bcrypt</strong> sebelum disimpan ke database.</li>
-                {% endif %}
-            </ul>
-        </div>
+
     </div>
 </div>
 {% endblock %}
