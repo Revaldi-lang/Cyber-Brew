@@ -1,5 +1,5 @@
-/* Import Google Fonts - Outfit & Inter */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+/* Import Google Fonts - Abhaya Libre */
+@import url('https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@400;500;600;700;800&display=swap');
 
 :root {
     --bg-dark: #0f0c0b;
@@ -18,8 +18,8 @@
     --insecure-red: #ff3366;
     --warning-yellow: #ffb703;
     
-    --font-heading: 'Outfit', sans-serif;
-    --font-body: 'Inter', sans-serif;
+    --font-heading: 'Abhaya Libre', serif;
+    --font-body: 'Abhaya Libre', serif;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
