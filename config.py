@@ -5,7 +5,7 @@
 # - Set to True to enable defenses (Parameterized Queries, HttpOnly/Secure Cookies, Bcrypt Password Hashing, Strict RBAC).
 #
 # PENTING: Untuk keperluan presentasi, ubah nilai ini ke True untuk menunjukkan bahwa pertahanan keamanan berhasil memblokir serangan.
-SECURITY_MODE = False
+SECURITY_MODE = True
 
 # Flask secret key for signing session cookies
 SECRET_KEY = "cyber_brew_super_secure_and_secret_key_1337"
@@ -15,5 +15,5 @@ DATABASE = "database.db"
 
 # Flask development server settings
 PORT = 5000
-HOST = "127.0.0.1"
+HOST = "0.0.0.0"
 DEBUG = True

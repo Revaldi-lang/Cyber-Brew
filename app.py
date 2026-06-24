@@ -39,9 +39,9 @@ def check_session_timeout():
         session.permanent = True
         if 'username' in session:
             last_active = session.get('last_active')
-            if last_active and now - last_active > 30:
+            if last_active and now - last_active > 90:
                 session.clear()
-                flash("Sesi Anda telah berakhir (30 detik tidak aktif).", "warning")
+                flash("Sesi Anda telah berakhir (90 detik tidak aktif).", "warning")
                 return redirect(url_for('login'))
             session['last_active'] = now
     else:
