@@ -141,7 +141,8 @@ def init_db():
             ("Cappuccino", "Kopi klasik Italia dengan rasio espresso, susu hangat, dan busa susu tebal yang seimbang.", 35000, "/static/images/cappuccino.jpg"),
             ("Caramel Macchiato", "Espresso dengan sirup caramel manis, susu hangat, dan saus karamel di atasnya.", 42000, "/static/images/macchiato.jpg"),
             ("Dark Mocha Fudge", "Kombinasi espresso, cokelat pekat premium, susu, dan whipped cream lembut.", 40000, "/static/images/mocha.jpg"),
-            ("Nitro Cold Brew", "Kopi cold brew yang diinfus nitrogen untuk tekstur super lembut seperti bir.", 38000, "/static/images/coldbrew.jpg")
+            ("Nitro Cold Brew", "Kopi cold brew yang diinfus nitrogen untuk tekstur super lembut seperti bir.", 38000, "/static/images/coldbrew.jpg"),
+            ("Kopi Tiga Serangkai", "Cita rasa kopi yang kuat dan hangat, diracik khusus untuk dinikmati bersama sahabat sejati.", 35000, "/static/images/special_menu.jpg")
         ]
         cursor.executemany('INSERT INTO products (name, description, price, image_url) VALUES (?, ?, ?, ?)', products)
         
