@@ -209,11 +209,6 @@ def init_db():
         cursor.execute('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', ('admin', p_admin, 'admin'))
         cursor.execute('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', ('customer', p_cust, 'user'))
         
-        # Seed a review to show XSS (insecure mode review will contain XSS payload ready to use, or they can submit it themselves)
-        conn.commit()
-        conn.close()
-        print("Database initialized successfully.")
-
 # Initialize the database on load
 init_db()
 

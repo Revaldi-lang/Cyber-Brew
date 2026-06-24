@@ -25,24 +25,6 @@
         <div class="auth-footer">
             Belum punya akun? <a href="/register" style="font-weight: 600;">Daftar Sekarang</a>
         </div>
-        
-        <!-- Info Lab Keamanan (Sangat berguna untuk penguji) -->
-        <div style="margin-top: 2rem; padding: 1.2rem; background-color: rgba(255, 255, 255, 0.02); border: 1px dashed var(--border); border-radius: 6px; font-size: 0.8rem; color: var(--text-muted);">
-            <strong style="color: var(--accent); display: block; margin-bottom: 0.5rem;">💡 Info Uji Keamanan:</strong>
-            <ul style="padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem;">
-                <li>Akun Default:
-                    <ul style="padding-left: 1rem; margin-top: 0.2rem;">
-                        <li>Admin: <code style="color: var(--text-light);">admin</code> / <code style="color: var(--text-light);">admin_123</code></li>
-                        <li>User: <code style="color: var(--text-light);">customer</code> / <code style="color: var(--text-light);">customer_123</code></li>
-                    </ul>
-                </li>
-                {% if not SECURITY_MODE %}
-                    <li style="color: var(--insecure-red);"><strong>SQL Injection Aktif:</strong> Anda dapat bypass login menggunakan payload seperti <code style="background-color: var(--bg-dark); padding: 2px 4px; border-radius: 3px;">' OR '1'='1</code> di kolom username.</li>
-                {% else %}
-                    <li style="color: var(--secure-green);"><strong>Pertahanan Aktif:</strong> Parameterized Queries aktif. SQL Injection akan diblokir sepenuhnya.</li>
-                {% endif %}
-            </ul>
-        </div>
     </div>
 </div>
 {% endblock %}
