@@ -34,9 +34,15 @@
                     <p class="product-desc">{{ product.description }}</p>
                     <div class="product-footer">
                         <span class="product-price">Rp {{ "{:,}".format(product.price).replace(",", ".") }}</span>
-                        <button class="btn btn-primary btn-sm" onclick="addToCart({{ product.id }}, '{{ product.name }}', {{ product.price }})">
-                            + Keranjang
-                        </button>
+                        {% if user and user.role == 'admin' %}
+                            <button class="btn btn-secondary btn-sm" disabled title="Admin tidak dapat memesan produk.">
+                                Nonaktif
+                            </button>
+                        {% else %}
+                            <button class="btn btn-primary btn-sm" onclick="addToCart({{ product.id }}, '{{ product.name }}', {{ product.price }})">
+                                + Keranjang
+                            </button>
+                        {% endif %}
                     </div>
                 </div>
             </div>

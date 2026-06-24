@@ -18,17 +18,11 @@
             <ul class="sidebar-menu">
                 <li>
                     <a href="/admin" class="sidebar-link active">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px;">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
-                        </svg>
                         Admin Console
                     </a>
                 </li>
                 <li>
                     <a href="/logout" class="sidebar-link" style="color: var(--insecure-red);">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px;">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-                        </svg>
                         Logout
                     </a>
                 </li>
@@ -113,6 +107,37 @@
                 </div>
             </div>
             
+            <!-- Add Product Section -->
+            <div style="margin-bottom: 3.5rem; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 2rem;">
+                <h3 style="margin-bottom: 1rem; color: var(--accent); font-size: 1.4rem;">➕ Tambah Produk Kopi Baru</h3>
+                <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.5rem;">
+                    Gunakan form di bawah ini untuk menambahkan produk baru ke katalog menu kopi.
+                </p>
+                <form action="/admin/add_product" method="POST" style="display: flex; flex-direction: column; gap: 1rem; max-width: 600px;">
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                        <label for="product_name" style="font-size: 0.9rem; color: var(--text-light);">Nama Produk</label>
+                        <input type="text" id="product_name" name="name" class="form-control" placeholder="Contoh: Espresso Romano" required style="width: 100%; padding: 0.6rem 0.8rem; background-color: var(--bg-input); border: 1px solid var(--border); border-radius: 4px; color: var(--text-light);">
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                        <label for="product_description" style="font-size: 0.9rem; color: var(--text-light);">Deskripsi</label>
+                        <textarea id="product_description" name="description" class="form-control" rows="3" placeholder="Deskripsikan cita rasa kopi..." required style="width: 100%; padding: 0.6rem 0.8rem; background-color: var(--bg-input); border: 1px solid var(--border); border-radius: 4px; color: var(--text-light); font-family: inherit; resize: vertical;"></textarea>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                            <label for="product_price" style="font-size: 0.9rem; color: var(--text-light);">Harga (Rp)</label>
+                            <input type="number" id="product_price" name="price" class="form-control" placeholder="Contoh: 30000" required style="width: 100%; padding: 0.6rem 0.8rem; background-color: var(--bg-input); border: 1px solid var(--border); border-radius: 4px; color: var(--text-light);">
+                        </div>
+                        <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                            <label for="product_image_url" style="font-size: 0.9rem; color: var(--text-light);">URL Gambar</label>
+                            <input type="text" id="product_image_url" name="image_url" class="form-control" value="/static/images/espresso.jpg" required style="width: 100%; padding: 0.6rem 0.8rem; background-color: var(--bg-input); border: 1px solid var(--border); border-radius: 4px; color: var(--text-light);">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="align-self: flex-start; margin-top: 0.5rem; padding: 0.6rem 1.5rem;">
+                        Tambah Produk
+                    </button>
+                </form>
+            </div>
+
             <!-- XSS Cookie Stealing Intrusion Logs -->
             <div class="log-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
@@ -133,9 +158,6 @@
                             <div class="log-card">
                                 <div class="log-header">
                                     <span class="log-title">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px;">
-                                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                                        </svg>
                                         SERANGAN XSS BERHASIL: Cookie Tercuri
                                     </span>
                                     <span>{{ log.timestamp }}</span>
@@ -151,9 +173,6 @@
                         {% endfor %}
                     {% else %}
                         <div style="text-align: center; border: 1px dashed var(--border); padding: 3rem 0; border-radius: 8px; color: var(--text-muted);">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" style="width: 48px; height: 48px; margin-bottom: 1rem; color: var(--border);">
-                              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
                             <p>Tidak ada aktivitas mencurigakan yang terdeteksi.</p>
                         </div>
                     {% endif %}

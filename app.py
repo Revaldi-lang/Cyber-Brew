@@ -334,6 +334,9 @@ def add_review():
 @app.route('/cart')
 def cart_page():
     user = get_current_user()
+    if user and user['role'] == 'admin':
+        flash("Admin tidak diperbolehkan mengakses keranjang belanja.", "warning")
+        return redirect(url_for('index'))
     return render_template('cart.html', user=user)
 
 @app.route('/checkout', methods=['POST'])
@@ -341,6 +344,9 @@ def checkout():
     user = get_current_user()
     if not user:
         return jsonify({"success": False, "message": "Silakan login terlebih dahulu."}), 401
+        
+    if user['role'] == 'admin':
+        return jsonify({"success": False, "message": "Admin tidak diperbolehkan membeli produk."}), 403
         
     data = request.get_json()
     if not data or 'items' not in data or 'total' not in data:
@@ -516,6 +522,33 @@ def admin_dashboard():
     
     # Render with security information for comparison in admin panel
     return render_template('admin.html', user=user, orders=orders, users=users, attack_log=attack_log, security_mode=config.SECURITY_MODE)
+
+@app.route('/admin/add_product', methods=['POST'])
+@admin_required
+def add_product():
+    name = request.form.get('name')
+    description = request.form.get('description')
+    price = request.form.get('price')
+    image_url = request.form.get('image_url')
+    
+    if not name or not description or not price or not image_url:
+        flash("Semua kolom produk harus diisi.", "danger")
+        return redirect(url_for('admin_dashboard'))
+        
+    try:
+        price = int(price)
+    except ValueError:
+        flash("Harga harus berupa angka.", "danger")
+        return redirect(url_for('admin_dashboard'))
+        
+    conn = get_db_connection()
+    conn.execute('INSERT INTO products (name, description, price, image_url) VALUES (?, ?, ?, ?)',
+                 (name, description, price, image_url))
+    conn.commit()
+    conn.close()
+    
+    flash(f"Produk '{name}' berhasil ditambahkan ke katalog!", "success")
+    return redirect(url_for('admin_dashboard'))
 
 
 # --- EXPLOIT / SECURITY DEMO HELPER ROUTE ---
