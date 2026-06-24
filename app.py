@@ -550,6 +550,30 @@ def add_product():
     flash(f"Produk '{name}' berhasil ditambahkan ke katalog!", "success")
     return redirect(url_for('admin_dashboard'))
 
+@app.route('/admin/delete_product/<int:product_id>', methods=['POST'])
+@admin_required
+def delete_product(product_id):
+    conn = get_db_connection()
+    product = conn.execute('SELECT * FROM products WHERE id = ?', (product_id,)).fetchone()
+    if not product:
+        conn.close()
+        flash("Produk tidak ditemukan.", "danger")
+        return redirect(url_for('menu'))
+        
+    # Delete reviews for this product first (foreign key reference)
+    conn.execute('DELETE FROM reviews WHERE product_id = ?', (product_id,))
+    # Delete the product
+    conn.execute('DELETE FROM products WHERE id = ?', (product_id,))
+    conn.commit()
+    conn.close()
+    
+    flash(f"Produk '{product['name']}' berhasil dihapus!", "success")
+    # Redirect back to where the request came from if possible
+    referrer = request.referrer
+    if referrer and ('admin' in referrer or 'menu' in referrer or referrer.endswith('/') or referrer.endswith('/#') or '127.0.0.1' in referrer):
+        return redirect(referrer)
+    return redirect(url_for('menu'))
+
 
 # --- EXPLOIT / SECURITY DEMO HELPER ROUTE ---
 

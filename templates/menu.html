@@ -22,9 +22,11 @@
                     <div class="product-footer" style="margin-bottom: 1.5rem;">
                         <span class="product-price">Rp {{ "{:,}".format(product.price).replace(",", ".") }}</span>
                         {% if user and user.role == 'admin' %}
-                            <button class="btn btn-secondary btn-sm" disabled title="Admin tidak dapat memesan produk.">
-                                Nonaktif
-                            </button>
+                            <form action="/admin/delete_product/{{ product.id }}" method="POST" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus menu ini?');">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    Hapus Menu
+                                </button>
+                            </form>
                         {% else %}
                             <button class="btn btn-primary btn-sm" onclick="addToCart({{ product.id }}, '{{ product.name }}', {{ product.price }})">
                                 + Tambah
