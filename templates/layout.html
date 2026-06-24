@@ -33,10 +33,12 @@
             
             <div class="nav-buttons">
                 <!-- Cart Icon -->
+                {% if not user or user.role != 'admin' %}
                 <a href="/cart" class="cart-icon-container" title="Keranjang Belanja">
                     Keranjang
                     <span id="cart-count-badge" class="cart-badge" style="display: none;">0</span>
                 </a>
+                {% endif %}
                 
                 {% if user %}
                     <span style="font-size: 0.9rem; color: var(--text-muted);">Hi, <strong style="color: var(--text-light);">{{ user.username }}</strong></span>
