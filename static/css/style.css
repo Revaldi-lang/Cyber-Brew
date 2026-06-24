@@ -1,5 +1,5 @@
-/* Import Google Fonts - Abhaya Libre */
-@import url('https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@400;500;600;700;800&display=swap');
+/* Import Google Fonts - Noto Sans SC */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
 
 :root {
     --bg-dark: #0f0c0b;
@@ -18,8 +18,8 @@
     --insecure-red: #ff3366;
     --warning-yellow: #ffb703;
     
-    --font-heading: 'Abhaya Libre', serif;
-    --font-body: 'Abhaya Libre', serif;
+    --font-heading: 'Noto Sans SC', sans-serif;
+    --font-body: 'Noto Sans SC', sans-serif;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
