@@ -267,3 +267,30 @@ function showNotification(message, type = 'success') {
         }, 400);
     }, 4000);
 }
+
+// --- AUTO LOGOUT / INACTIVITY TIMER (30 seconds) ---
+let inactivityTimer;
+const INACTIVITY_LIMIT = 30000; // 30 seconds
+
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+        // Only logout if the logout button is present (user is logged in)
+        if (document.querySelector('a[href="/logout"]')) {
+            showNotification("Sesi Anda telah berakhir (30 detik tidak aktif). Mengalihkan...", "warning");
+            setTimeout(() => {
+                window.location.href = '/logout';
+            }, 1500);
+        }
+    }, INACTIVITY_LIMIT);
+}
+
+// Start timer if logged in
+if (document.querySelector('a[href="/logout"]')) {
+    resetInactivityTimer();
+    // Listen for user activity to reset the timer
+    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    activityEvents.forEach(event => {
+        document.addEventListener(event, resetInactivityTimer, true);
+    });
+}

@@ -25,13 +25,12 @@ else:
         SESSION_COOKIE_SAMESITE=None
     )
 
-# Configure Session Timeout (30 seconds)
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=30)
+# Configure Session Timeout (30 seconds check, but keep session lifetime larger so manual timeout check can display warning)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=15)
 
 @app.before_request
 def check_session_timeout():
-    ignored_routes = ['static', 'login', 'register', 'logout', 'log_cookie']
-    if request.endpoint in ignored_routes:
+    if not request.endpoint or request.endpoint in ['static', 'login', 'register', 'logout', 'log_cookie']:
         return
 
     now = datetime.now().timestamp()
@@ -67,8 +66,8 @@ def update_last_active(response):
     # Update last active time for cookie in insecure mode
     if not config.SECURITY_MODE:
         username = request.cookies.get('session_user')
-        if username:
-            # Only set last active if the user is currently authenticated
+        # Only set if user is logged in and response is not redirecting/logging out
+        if username and response.status_code != 302:
             response.set_cookie('session_last_active', str(datetime.now().timestamp()))
     return response
 
