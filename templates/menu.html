@@ -63,7 +63,7 @@
                         </div>
                         
                         <!-- Review Form -->
-                        {% if user %}
+                        {% if user and user.role != 'admin' %}
                             <form action="/add_review" method="POST" class="review-form">
                                 <input type="hidden" name="product_id" value="{{ product.id }}">
                                 <div style="display: flex; gap: 0.5rem;">
@@ -71,7 +71,7 @@
                                     <button type="submit" class="btn btn-primary btn-sm" style="padding: 0.5rem 1rem;">Kirim</button>
                                 </div>
                             </form>
-                        {% else %}
+                        {% elif not user %}
                             <p style="color: var(--text-muted); font-size: 0.8rem; text-align: center; border: 1px dashed var(--border); padding: 0.5rem; border-radius: 4px;">
                                 Silakan <a href="/login" style="font-weight: 600;">Login</a> untuk menulis ulasan.
                             </p>

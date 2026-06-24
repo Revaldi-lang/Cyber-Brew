@@ -311,6 +311,10 @@ def add_review():
         flash("Anda harus login untuk mengirim ulasan.", "danger")
         return redirect(url_for('login'))
         
+    if user['role'] == 'admin':
+        flash("Admin tidak diperbolehkan mengirim ulasan.", "danger")
+        return redirect(url_for('menu'))
+        
     product_id = request.form.get('product_id')
     comment = request.form.get('comment')
     username = user['username']
