@@ -51,7 +51,7 @@ def check_session_timeout():
             if last_active_cookie:
                 try:
                     elapsed = now - float(last_active_cookie)
-                    if elapsed > 30:
+                    if elapsed > 90:
                         resp = make_response(redirect(url_for('login')))
                         resp.delete_cookie('session_user')
                         resp.delete_cookie('session_role')
@@ -210,12 +210,6 @@ def init_db():
         cursor.execute('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', ('customer', p_cust, 'user'))
         
         # Seed a review to show XSS (insecure mode review will contain XSS payload ready to use, or they can submit it themselves)
-        cursor.execute('''
-            INSERT INTO reviews (product_id, username, comment, review_date)
-            VALUES (?, ?, ?, ?)
-        ''', (2, 'anonymous_hacker', 'Kopi enak! <script>console.log("XSS Triggered!");</script>', datetime.now().strftime("%Y-%m-%d %H:%M"))
-        )
-        
         conn.commit()
         conn.close()
         print("Database initialized successfully.")
