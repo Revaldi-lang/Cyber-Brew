@@ -470,21 +470,27 @@ def login():
     if user:
         return redirect(url_for('index'))
         
+    now = datetime.now().timestamp()
+    ip_addr = request.remote_addr
+    
+    # Check if currently locked out (available on both GET and POST)
+    locked_out = False
+    remaining = 0
+    if ip_addr in login_attempts:
+        lockout_until = login_attempts[ip_addr].get('lockout_until', 0.0)
+        if now < lockout_until:
+            locked_out = True
+            remaining = int(lockout_until - now)
+            
     if request.method == 'POST':
+        # If locked out, block POST immediately
+        if locked_out:
+            flash(f"Akun ditangguhkan! Terlalu banyak percobaan login salah. Silakan coba lagi dalam {remaining} detik.", "danger")
+            return redirect(url_for('login'))
+            
         username = request.form.get('username', '').strip()
         password = request.form.get('password')
         
-        now = datetime.now().timestamp()
-        ip_addr = request.remote_addr
-        
-        # 1. Global Lockout Check (active in both modes, tracked by IP address)
-        if ip_addr in login_attempts:
-            lockout_until = login_attempts[ip_addr].get('lockout_until', 0.0)
-            if now < lockout_until:
-                remaining_seconds = int(lockout_until - now)
-                flash(f"Akun ditangguhkan! Terlalu banyak percobaan login salah. Silakan coba lagi dalam {remaining_seconds} detik.", "danger")
-                return render_template('login.html', user=None)
-
         conn = get_db_connection()
         login_success = False
         user_record = None
@@ -555,12 +561,13 @@ def login():
                 login_attempts[ip_addr]['attempts'] = 0  # Reset for next cycle
                 flash("Username atau password salah. Terlalu banyak kesalahan, akun ditangguhkan selama 60 detik.", "danger")
             else:
-                remaining = 3 - attempts
-                flash(f"Username atau password salah. Sisa percobaan: {remaining} kali.", "warning")
+                remaining_tries = 3 - attempts
+                flash(f"Username atau password salah. Sisa percobaan: {remaining_tries} kali.", "warning")
             
-            return render_template('login.html', user=None)
+            # Post/Redirect/Get pattern: redirect to login GET route to prevent duplicate submissions on refresh
+            return redirect(url_for('login'))
             
-    return render_template('login.html', user=None)
+    return render_template('login.html', user=None, locked_out=locked_out, remaining=remaining)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

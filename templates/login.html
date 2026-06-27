@@ -8,18 +8,26 @@
         <h2>Login Akun</h2>
         <p class="auth-subtitle">Masuk untuk menikmati kopi favorit dan melacak pesanan Anda.</p>
         
+        {% if locked_out %}
+        <div class="alert alert-danger" style="margin-bottom: 1.5rem; text-align: center; justify-content: center; font-weight: 600;">
+            <span id="lockout-timer-msg">🚨 Akses Ditangguhkan! Silakan coba lagi dalam <strong id="lockout-seconds">{{ remaining }}</strong> detik.</span>
+        </div>
+        {% endif %}
+        
         <form action="/login" method="POST">
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" id="username" name="username" class="form-control" placeholder="Masukkan username" required autofocus>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Masukkan username" required autofocus {% if locked_out %}disabled{% endif %}>
             </div>
             
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" class="form-control" placeholder="Masukkan password" required>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Masukkan password" required {% if locked_out %}disabled{% endif %}>
             </div>
             
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Login</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" {% if locked_out %}disabled style="opacity: 0.6; cursor: not-allowed;"{% endif %}>
+                {% if locked_out %}Terblokir{% else %}Login{% endif %}
+            </button>
         </form>
         
         <div class="auth-footer">
@@ -27,4 +35,24 @@
         </div>
     </div>
 </div>
+
+{% if locked_out %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const timerSpan = document.getElementById("lockout-seconds");
+        const msgSpan = document.getElementById("lockout-timer-msg");
+        let seconds = parseInt(timerSpan.textContent);
+        
+        const interval = setInterval(function() {
+            seconds--;
+            if (seconds <= 0) {
+                msgSpan.innerHTML = "Batas penangguhan selesai. Silakan <a href='/login' style='text-decoration: underline; font-weight: bold; color: inherit;'>refresh halaman</a> untuk login kembali.";
+                clearInterval(interval);
+            } else {
+                timerSpan.textContent = seconds;
+            }
+        }, 1000);
+    });
+</script>
+{% endif %}
 {% endblock %}
