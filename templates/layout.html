@@ -67,6 +67,28 @@
         {% endwith %}
     </div>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const alerts = document.querySelectorAll(".alert span");
+            alerts.forEach(function(alertSpan) {
+                const text = alertSpan.textContent;
+                const match = text.match(/coba lagi dalam (\d+) detik/);
+                if (match) {
+                    let seconds = parseInt(match[1]);
+                    const interval = setInterval(function() {
+                        seconds--;
+                        if (seconds <= 0) {
+                            alertSpan.textContent = "Batas penangguhan selesai. Silakan coba login kembali.";
+                            clearInterval(interval);
+                        } else {
+                            alertSpan.textContent = text.replace(/coba lagi dalam \d+ detik/, "coba lagi dalam " + seconds + " detik");
+                        }
+                    }, 1000);
+                }
+            });
+        });
+    </script>
+
     <!-- Main Content Block -->
     <main>
         {% block content %}{% endblock %}
