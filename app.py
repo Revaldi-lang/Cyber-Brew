@@ -59,9 +59,7 @@ def check_session_timeout():
                 
                 session.clear()
                 resp = make_response(redirect(url_for('login')))
-                resp.delete_cookie('session_user')
-                resp.delete_cookie('session_role')
-                resp.delete_cookie('session_last_active')
+                delete_session_cookies(resp)
                 flash("🚨 PERINGATAN KEAMANAN: Deteksi akses sesi dari IP/User-Agent berbeda! Sesi Anda dibatalkan demi keamanan.", "danger")
                 return resp
 
@@ -88,17 +86,17 @@ def check_session_timeout():
                 # Invalidate session and redirect
                 session.clear()
                 resp = make_response(redirect(url_for('login')))
-                resp.delete_cookie('session_user')
-                resp.delete_cookie('session_role')
-                resp.delete_cookie('session_last_active')
+                delete_session_cookies(resp)
                 flash("🚨 PERINGATAN: Terdeteksi upaya manipulasi cookie peran (session_role)! Sesi Anda dibatalkan demi keamanan.", "danger")
                 return resp
 
             last_active = session.get('last_active')
             if last_active and now - last_active > 90:
                 session.clear()
+                resp = make_response(redirect(url_for('login')))
+                delete_session_cookies(resp)
                 flash("Sesi Anda telah berakhir (90 detik tidak aktif).", "warning")
-                return redirect(url_for('login'))
+                return resp
             session['last_active'] = now
     else:
         username = request.cookies.get('session_user')
@@ -109,10 +107,8 @@ def check_session_timeout():
                     elapsed = now - float(last_active_cookie)
                     if elapsed > 90:
                         resp = make_response(redirect(url_for('login')))
-                        resp.delete_cookie('session_user')
-                        resp.delete_cookie('session_role')
-                        resp.delete_cookie('session_last_active')
-                        flash("Sesi Anda telah berakhir (30 detik tidak aktif).", "warning")
+                        delete_session_cookies(resp)
+                        flash("Sesi Anda telah berakhir (90 detik tidak aktif).", "warning")
                         return resp
                 except ValueError:
                     pass
@@ -284,6 +280,18 @@ init_db()
 
 
 # --- HELPER FUNCTIONS ---
+def delete_session_cookies(resp):
+    """
+    Delete session cookies from browser.
+    Deletes both plain cookies and secure cookies with flags.
+    """
+    resp.delete_cookie('session_user')
+    resp.delete_cookie('session_role')
+    resp.delete_cookie('session_last_active')
+    resp.delete_cookie('session_user', httponly=True, secure=True, samesite='Strict')
+    resp.delete_cookie('session_role', httponly=True, secure=True, samesite='Strict')
+    resp.delete_cookie('session_last_active', httponly=True, secure=True, samesite='Strict')
+
 def get_current_user():
     """
     Get current logged in user from session/cookie.
@@ -596,13 +604,7 @@ def register():
 def logout():
     # Logout handles both secure and insecure modes
     resp = make_response(redirect(url_for('index')))
-    
-    # Insecure logout: delete plain cookies
-    resp.delete_cookie('session_user')
-    resp.delete_cookie('session_role')
-    resp.delete_cookie('session_last_active')
-    
-    # Secure logout: clear Flask session
+    delete_session_cookies(resp)
     session.clear()
     
     flash("Anda telah logout.", "info")
