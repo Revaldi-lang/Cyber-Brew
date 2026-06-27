@@ -463,7 +463,7 @@ def login():
         return redirect(url_for('index'))
         
     if request.method == 'POST':
-        username = request.form.get('username')
+        username = request.form.get('username', '').strip()
         password = request.form.get('password')
         
         conn = get_db_connection()
@@ -498,10 +498,11 @@ def login():
         else:
             # --- SECURE LOGIN (Parameterized Query & Bcrypt Verification & Lockout Check) ---
             now = datetime.now().timestamp()
+            username_key = username.lower()
             
             # Check if username is locked out
-            if username in login_attempts:
-                lockout_until = login_attempts[username].get('lockout_until', 0.0)
+            if username_key in login_attempts:
+                lockout_until = login_attempts[username_key].get('lockout_until', 0.0)
                 if now < lockout_until:
                     remaining_seconds = int(lockout_until - now)
                     flash(f"Akun ditangguhkan! Terlalu banyak percobaan login salah. Silakan coba lagi dalam {remaining_seconds} detik.", "danger")
@@ -524,8 +525,8 @@ def login():
                 
             if is_valid:
                 # Reset failed login attempts on success
-                if username in login_attempts:
-                    login_attempts.pop(username)
+                if username_key in login_attempts:
+                    login_attempts.pop(username_key)
                 
                 # Session fixation defense: regenerate session identifier
                 session.clear()
@@ -547,17 +548,17 @@ def login():
                 return resp
             else:
                 # Track failed login attempt
-                if username:
-                    if username not in login_attempts:
-                        login_attempts[username] = {'attempts': 0, 'lockout_until': 0.0}
+                if username_key:
+                    if username_key not in login_attempts:
+                        login_attempts[username_key] = {'attempts': 0, 'lockout_until': 0.0}
                     
-                    login_attempts[username]['attempts'] += 1
-                    attempts = login_attempts[username]['attempts']
+                    login_attempts[username_key]['attempts'] += 1
+                    attempts = login_attempts[username_key]['attempts']
                     
                     if attempts >= 3:
                         # Lock out for 60 seconds
-                        login_attempts[username]['lockout_until'] = now + 60.0
-                        login_attempts[username]['attempts'] = 0  # reset count for next lockout cycle if they fail again
+                        login_attempts[username_key]['lockout_until'] = now + 60.0
+                        login_attempts[username_key]['attempts'] = 0  # reset count for next lockout cycle if they fail again
                         flash("Username atau password salah. Terlalu banyak kesalahan, akun ditangguhkan selama 60 detik.", "danger")
                     else:
                         remaining = 3 - attempts
