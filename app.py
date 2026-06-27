@@ -159,6 +159,9 @@ def update_last_active_and_add_headers(response):
 # Attack log for XSS cookie stealing demonstration
 attack_log = []
 
+# Rate limiting for login attempts (Format: { username: { 'attempts': int, 'lockout_until': float } })
+login_attempts = {}
+
 
 
 # --- DATABASE SETUP ---
@@ -518,11 +521,23 @@ def login():
             conn.close()
             
         else:
-            # --- SECURE LOGIN (Parameterized Query & Bcrypt Verification) ---
+            # --- SECURE LOGIN (Parameterized Query & Bcrypt Verification & Lockout Check) ---
+            now = datetime.now().timestamp()
+            
+            # Check if username is locked out
+            if username in login_attempts:
+                lockout_until = login_attempts[username].get('lockout_until', 0.0)
+                if now < lockout_until:
+                    remaining_seconds = int(lockout_until - now)
+                    flash(f"Akun ditangguhkan! Terlalu banyak percobaan login salah. Silakan coba lagi dalam {remaining_seconds} detik.", "danger")
+                    conn.close()
+                    return render_template('login.html', user=None)
+
             # Using placeholders (?) to prevent SQL Injection
             user_record = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
             conn.close()
             
+            is_valid = False
             if user_record:
                 stored_password = user_record['password']
                 # Verify bcrypt hash
@@ -532,27 +547,48 @@ def login():
                     # Fallback in case a plaintext password remained in DB
                     is_valid = (password == stored_password)
                 
-                if is_valid:
-                    # Session fixation defense: regenerate session identifier
-                    session.clear()
+            if is_valid:
+                # Reset failed login attempts on success
+                if username in login_attempts:
+                    login_attempts.pop(username)
+                
+                # Session fixation defense: regenerate session identifier
+                session.clear()
+                
+                # Secure login successful! Set signed session cookies (with HttpOnly, Secure)
+                session['username'] = user_record['username']
+                session['role'] = user_record['role']
+                session['last_active'] = datetime.now().timestamp()
+                session['user_agent'] = request.headers.get('User-Agent')
+                session['ip_address'] = request.remote_addr
+                
+                # Also set explicit secure cookies for visual demo in F12
+                resp = make_response(redirect(url_for('index')))
+                resp.set_cookie('session_user', user_record['username'], httponly=True, secure=True, samesite='Strict')
+                resp.set_cookie('session_role', user_record['role'], httponly=True, secure=True, samesite='Strict')
+                resp.set_cookie('session_last_active', str(datetime.now().timestamp()), httponly=True, secure=True, samesite='Strict')
+                
+                flash(f"Login sukses! Selamat datang {user_record['username']}.", "success")
+                return resp
+            else:
+                # Track failed login attempt
+                if username:
+                    if username not in login_attempts:
+                        login_attempts[username] = {'attempts': 0, 'lockout_until': 0.0}
                     
-                    # Secure login successful! Set signed session cookies (with HttpOnly, Secure)
-                    session['username'] = user_record['username']
-                    session['role'] = user_record['role']
-                    session['last_active'] = datetime.now().timestamp()
-                    session['user_agent'] = request.headers.get('User-Agent')
-                    session['ip_address'] = request.remote_addr
+                    login_attempts[username]['attempts'] += 1
+                    attempts = login_attempts[username]['attempts']
                     
-                    # Also set explicit secure cookies for visual demo in F12
-                    resp = make_response(redirect(url_for('index')))
-                    resp.set_cookie('session_user', user_record['username'], httponly=True, secure=True, samesite='Strict')
-                    resp.set_cookie('session_role', user_record['role'], httponly=True, secure=True, samesite='Strict')
-                    resp.set_cookie('session_last_active', str(datetime.now().timestamp()), httponly=True, secure=True, samesite='Strict')
-                    
-                    flash(f"Login sukses! Selamat datang {user_record['username']}.", "success")
-                    return resp
-            
-            flash("Username atau password salah.", "danger")
+                    if attempts >= 3:
+                        # Lock out for 60 seconds
+                        login_attempts[username]['lockout_until'] = now + 60.0
+                        login_attempts[username]['attempts'] = 0  # reset count for next lockout cycle if they fail again
+                        flash("Username atau password salah. Terlalu banyak kesalahan, akun ditangguhkan selama 60 detik.", "danger")
+                    else:
+                        remaining = 3 - attempts
+                        flash(f"Username atau password salah. Sisa percobaan: {remaining} kali.", "warning")
+                else:
+                    flash("Username atau password salah.", "danger")
             
     return render_template('login.html', user=None)
 
