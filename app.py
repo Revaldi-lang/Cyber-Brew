@@ -38,7 +38,34 @@ def check_session_timeout():
     if config.SECURITY_MODE:
         session.permanent = True
         if 'username' in session:
-            # Check for Session/Cookie Tampering (manually editing cookies in F12)
+            # 1. Check for Session Hijacking (Session Fingerprinting / Binding Mismatch)
+            secure_ua = session.get('user_agent')
+            secure_ip = session.get('ip_address')
+            current_ua = request.headers.get('User-Agent')
+            current_ip = request.remote_addr
+            
+            if secure_ua != current_ua or secure_ip != current_ip:
+                ip_addr = request.remote_addr
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                
+                # Log hijacking attempt
+                attack_log.append({
+                    "title": "UPAYA HIJACKING SESI: Session Fingerprint Mismatch",
+                    "timestamp": timestamp,
+                    "ip": ip_addr,
+                    "cookie": f"IP Mismatch: Current={current_ip} (Expected={secure_ip}) | UA Mismatch: Current={current_ua[:50]}... (Expected={secure_ua[:50]}...)",
+                    "user_agent": current_ua
+                })
+                
+                session.clear()
+                resp = make_response(redirect(url_for('login')))
+                resp.delete_cookie('session_user')
+                resp.delete_cookie('session_role')
+                resp.delete_cookie('session_last_active')
+                flash("🚨 PERINGATAN KEAMANAN: Deteksi akses sesi dari IP/User-Agent berbeda! Sesi Anda dibatalkan demi keamanan.", "danger")
+                return resp
+
+            # 2. Check for Session/Cookie Tampering (manually editing cookies in F12)
             secure_role = session.get('role')
             secure_user = session.get('username')
             cookie_role = request.cookies.get('session_role')
@@ -506,10 +533,15 @@ def login():
                     is_valid = (password == stored_password)
                 
                 if is_valid:
+                    # Session fixation defense: regenerate session identifier
+                    session.clear()
+                    
                     # Secure login successful! Set signed session cookies (with HttpOnly, Secure)
                     session['username'] = user_record['username']
                     session['role'] = user_record['role']
                     session['last_active'] = datetime.now().timestamp()
+                    session['user_agent'] = request.headers.get('User-Agent')
+                    session['ip_address'] = request.remote_addr
                     
                     # Also set explicit secure cookies for visual demo in F12
                     resp = make_response(redirect(url_for('index')))
