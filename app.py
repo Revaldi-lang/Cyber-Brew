@@ -38,6 +38,35 @@ def check_session_timeout():
     if config.SECURITY_MODE:
         session.permanent = True
         if 'username' in session:
+            # Check for Session/Cookie Tampering (manually editing cookies in F12)
+            secure_role = session.get('role')
+            secure_user = session.get('username')
+            cookie_role = request.cookies.get('session_role')
+            cookie_user = request.cookies.get('session_user')
+            
+            if (cookie_role and cookie_role != secure_role) or (cookie_user and cookie_user != secure_user):
+                # Anomaly detected: cookie values don't match the cryptographically signed session data
+                ip_addr = request.remote_addr
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                
+                # Log incident
+                attack_log.append({
+                    "title": "MANIPULASI COOKIE TERDETEKSI: Session Tampering",
+                    "timestamp": timestamp,
+                    "ip": ip_addr,
+                    "cookie": f"Tampered Cookie: session_role={cookie_role} (Expected={secure_role}) | session_user={cookie_user} (Expected={secure_user})",
+                    "user_agent": request.headers.get('User-Agent')
+                })
+                
+                # Invalidate session and redirect
+                session.clear()
+                resp = make_response(redirect(url_for('login')))
+                resp.delete_cookie('session_user')
+                resp.delete_cookie('session_role')
+                resp.delete_cookie('session_last_active')
+                flash("🚨 PERINGATAN: Terdeteksi upaya manipulasi cookie peran (session_role)! Sesi Anda dibatalkan demi keamanan.", "danger")
+                return resp
+
             last_active = session.get('last_active')
             if last_active and now - last_active > 90:
                 session.clear()
@@ -61,15 +90,44 @@ def check_session_timeout():
                 except ValueError:
                     pass
 
+@app.before_request
+def enforce_https():
+    if config.SECURITY_MODE:
+        # Check if requested over HTTP (not secure)
+        is_secure = request.is_secure or request.headers.get('X-Forwarded-Proto', '').lower() == 'https'
+        if not is_secure:
+            url = request.url.replace("http://", "https://", 1)
+            return redirect(url, code=301)
+
 @app.after_request
-def update_last_active(response):
+def update_last_active_and_add_headers(response):
     # Update last active time for cookie in insecure mode
     if not config.SECURITY_MODE:
         username = request.cookies.get('session_user')
         # Only set if user is logged in and response is not redirecting/logging out
         if username and response.status_code != 302:
             response.set_cookie('session_last_active', str(datetime.now().timestamp()))
+    else:
+        # Secure Mode: Update last active cookie if logged in
+        username = session.get('username')
+        if username and response.status_code != 302:
+            response.set_cookie('session_last_active', str(datetime.now().timestamp()), httponly=True, secure=True, samesite='Strict')
+            
+        # Secure Mode: Set HTTP Security Headers
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "img-src 'self' data:; "
+            "frame-ancestors 'none';"
+        )
     return response
+
 
 # Attack log for XSS cookie stealing demonstration
 attack_log = []
@@ -452,8 +510,15 @@ def login():
                     session['username'] = user_record['username']
                     session['role'] = user_record['role']
                     session['last_active'] = datetime.now().timestamp()
+                    
+                    # Also set explicit secure cookies for visual demo in F12
+                    resp = make_response(redirect(url_for('index')))
+                    resp.set_cookie('session_user', user_record['username'], httponly=True, secure=True, samesite='Strict')
+                    resp.set_cookie('session_role', user_record['role'], httponly=True, secure=True, samesite='Strict')
+                    resp.set_cookie('session_last_active', str(datetime.now().timestamp()), httponly=True, secure=True, samesite='Strict')
+                    
                     flash(f"Login sukses! Selamat datang {user_record['username']}.", "success")
-                    return redirect(url_for('index'))
+                    return resp
             
             flash("Username atau password salah.", "danger")
             
@@ -621,6 +686,15 @@ def inject_security_status():
 # --- RUN THE APP ---
 if __name__ == '__main__':
     # Determine protocol based on certificates availability
+    if not os.path.exists("cert.pem") or not os.path.exists("key.pem"):
+        print("Sertifikat SSL (cert.pem / key.pem) tidak ditemukan. Membuat sertifikat baru...")
+        try:
+            from generate_certs import generate_self_signed_cert
+            generate_self_signed_cert()
+        except Exception as e:
+            print(f"Gagal membuat sertifikat SSL otomatis: {e}")
+            print("Menjalankan server via HTTP...")
+
     if os.path.exists("cert.pem") and os.path.exists("key.pem"):
         print("Running Flask Server with HTTPS/TLS enabled...")
         app.run(
@@ -636,3 +710,4 @@ if __name__ == '__main__':
             port=config.PORT,
             debug=config.DEBUG
         )
+
