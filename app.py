@@ -222,15 +222,24 @@ def init_db():
     if p_count == 0:
         print("Seeding products...")
         products = [
-            ("Espresso Solo", "Kopi hitam pekat murni yang diekstrak dengan tekanan tinggi. Kuat dan aromatik.", 25000, "/static/images/espresso.jpg"),
-            ("Cafe Latte", "Perpaduan espresso premium dengan susu hangat lembut dan lapisan busa tipis.", 35000, "/static/images/latte.jpg"),
-            ("Cappuccino", "Kopi klasik Italia dengan rasio espresso, susu hangat, dan busa susu tebal yang seimbang.", 35000, "/static/images/cappuccino.jpg"),
-            ("Caramel Macchiato", "Espresso dengan sirup caramel manis, susu hangat, dan saus karamel di atasnya.", 42000, "/static/images/macchiato.jpg"),
-            ("Dark Mocha Fudge", "Kombinasi espresso, cokelat pekat premium, susu, dan whipped cream lembut.", 40000, "/static/images/mocha.jpg"),
-            ("Nitro Cold Brew", "Kopi cold brew yang diinfus nitrogen untuk tekstur super lembut seperti bir.", 38000, "/static/images/coldbrew.jpg"),
-            ("Kopi Tiga Serangkai", "Cita rasa kopi yang kuat dan hangat, diracik khusus untuk dinikmati bersama sahabat sejati.", 35000, "/static/images/special_menu.jpg")
+            ("Espresso Penalty Kick", "Kopi hitam pekat sekuat tendangan penalti. Menembus gawang kantuk Anda.", 25000, "/static/images/espresso.jpg"),
+            ("Latte Tiki-Taka", "Perpaduan espresso dan susu hangat yang mengalir mulus seperti umpan tiki-taka.", 35000, "/static/images/latte.jpg"),
+            ("Cappuccino Free Kick", "Klasik Italia dengan foam tebal, melengkung indah seperti tendangan bebas legendaris.", 35000, "/static/images/cappuccino.jpg"),
+            ("Caramel Offside", "Sirup caramel manis yang berani menembus pertahanan rasa kopi terbaik.", 42000, "/static/images/macchiato.jpg"),
+            ("Golden Boot Mocha", "Kombinasi espresso cokelat premium, persembahan bagi para pencetak gol terbanyak.", 40000, "/static/images/mocha.jpg"),
+            ("Nitro World Cup Brew", "Kopi dingin berenergi tinggi untuk menemani Anda begadang nobar semalaman.", 38000, "/static/images/coldbrew.jpg"),
+            ("Kopi Hattrick", "Tiga rasa dalam satu racikan hebat untuk merayakan kemenangan tim favorit Anda.", 35000, "/static/images/special_menu.jpg")
         ]
         cursor.executemany('INSERT INTO products (name, description, price, image_url) VALUES (?, ?, ?, ?)', products)
+    else:
+        # Dynamic migration update for existing database records
+        cursor.execute("UPDATE products SET name = 'Espresso Penalty Kick', description = 'Kopi hitam pekat sekuat tendangan penalti. Menembus gawang kantuk Anda.' WHERE name = 'Espresso Solo'")
+        cursor.execute("UPDATE products SET name = 'Latte Tiki-Taka', description = 'Perpaduan espresso dan susu hangat yang mengalir mulus seperti umpan tiki-taka.' WHERE name = 'Cafe Latte'")
+        cursor.execute("UPDATE products SET name = 'Cappuccino Free Kick', description = 'Klasik Italia dengan foam tebal, melengkung indah seperti tendangan bebas legendaris.' WHERE name = 'Cappuccino'")
+        cursor.execute("UPDATE products SET name = 'Caramel Offside', description = 'Sirup caramel manis yang berani menembus pertahanan rasa kopi terbaik.' WHERE name = 'Caramel Macchiato'")
+        cursor.execute("UPDATE products SET name = 'Golden Boot Mocha', description = 'Kombinasi espresso cokelat premium, persembahan bagi para pencetak gol terbanyak.' WHERE name = 'Dark Mocha Fudge'")
+        cursor.execute("UPDATE products SET name = 'Nitro World Cup Brew', description = 'Kopi dingin berenergi tinggi untuk menemani Anda begadang nobar semalaman.' WHERE name = 'Nitro Cold Brew'")
+        cursor.execute("UPDATE products SET name = 'Kopi Hattrick', description = 'Tiga rasa dalam satu racikan hebat untuk merayakan kemenangan tim favorit Anda.' WHERE name = 'Kopi Tiga Serangkai'")
     
     # Seed Users if empty
     admin_record = cursor.execute('SELECT * FROM users WHERE username = ?', ('admin',)).fetchone()

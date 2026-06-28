@@ -2,16 +2,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
 
 :root {
-    --bg-dark: #0f0c0b;
-    --bg-card: #181311;
-    --bg-input: #201a18;
-    --primary: #c0824b;
-    --primary-hover: #a36b3b;
-    --accent: #d4af37;
-    --text-light: #f5ebe0;
-    --text-muted: #a0928a;
-    --border: #2d2420;
-    --border-focus: #c0824b;
+    --bg-dark: #040907;
+    --bg-card: #0c1411;
+    --bg-input: #121e1a;
+    --primary: #10b981;
+    --primary-hover: #059669;
+    --accent: #f59e0b;
+    --text-light: #e6f4ea;
+    --text-muted: #80a390;
+    --border: #1a2e26;
+    --border-focus: #10b981;
     
     /* Security indicators */
     --secure-green: #00ff87;
@@ -256,7 +256,7 @@ header {
     min-height: 70vh;
     display: flex;
     align-items: center;
-    background: linear-gradient(rgba(15, 12, 11, 0.6), rgba(15, 12, 11, 0.95)), url('/static/images/hero-bg.jpg') no-repeat center center/cover;
+    background: linear-gradient(rgba(4, 9, 7, 0.65), rgba(4, 9, 7, 0.98)), url('/static/images/hero-bg-worldcup.png') no-repeat center center/cover;
     padding: 4rem 2rem;
     position: relative;
     border-bottom: 1px solid var(--border);
@@ -1004,4 +1004,46 @@ footer {
         flex-direction: column;
         text-align: center;
     }
+}
+
+/* World Cup Custom Styles */
+.wc-badge {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, var(--accent), #d97706);
+    color: #040907;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+    text-transform: uppercase;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Coupon section layout in cart */
+.coupon-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.coupon-form {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.coupon-msg {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.coupon-msg.success {
+    color: var(--secure-green);
+}
+
+.coupon-msg.error {
+    color: var(--insecure-red);
 }

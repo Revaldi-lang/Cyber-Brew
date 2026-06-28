@@ -7,6 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('cart-items-container')) {
         renderCartPage();
     }
+    
+    // Initialize World Cup predictions if we are on the index page
+    if (document.getElementById('predict-widget-argentina-france') || document.getElementById('predict-widget-brazil-england')) {
+        initPredictions();
+    }
 });
 
 // --- CART LOGIC ---
@@ -159,17 +164,33 @@ function renderCartPage() {
     container.innerHTML = html;
     
     // Render Summary
-    const tax = total * 0.1; // 10% tax
-    const finalTotal = total + tax;
+    const activeCoupon = localStorage.getItem('cyber_brew_coupon');
+    const hasDiscount = activeCoupon === 'PIALADUNIA2026';
+    const discount = hasDiscount ? total * 0.15 : 0;
+    const subtotalAfterDiscount = total - discount;
+    const tax = subtotalAfterDiscount * 0.1; // 10% tax
+    const finalTotal = subtotalAfterDiscount + tax;
     
     if (summaryContainer) {
-        summaryContainer.innerHTML = `
+        let summaryHtml = `
             <div class="summary-card">
                 <h3 style="margin-bottom: 1.5rem;">Ringkasan Pesanan</h3>
                 <div class="summary-row">
                     <span>Subtotal</span>
                     <span>${formatRupiah(total)}</span>
                 </div>
+        `;
+        
+        if (hasDiscount) {
+            summaryHtml += `
+                <div class="summary-row" style="color: var(--secure-green); font-weight: 600;">
+                    <span>Diskon (15% Piala Dunia)</span>
+                    <span>-${formatRupiah(discount)}</span>
+                </div>
+            `;
+        }
+        
+        summaryHtml += `
                 <div class="summary-row">
                     <span>Pajak (10%)</span>
                     <span>${formatRupiah(tax)}</span>
@@ -178,9 +199,20 @@ function renderCartPage() {
                     <span>Total</span>
                     <span>${formatRupiah(finalTotal)}</span>
                 </div>
-                <button class="btn btn-primary" style="width: 100%;" onclick="processCheckout(${finalTotal})">Checkout Pemesanan</button>
+                
+                <div class="coupon-section">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.5rem;">Kode Promo Piala Dunia</label>
+                    <div class="coupon-form">
+                        <input type="text" id="coupon-input" class="form-control" placeholder="Contoh: PIALADUNIA2026" style="padding: 0.4rem 0.6rem; font-size: 0.85rem; border-radius: 4px;" ${hasDiscount ? 'value="PIALADUNIA2026" disabled' : ''}>
+                        <button class="btn btn-secondary btn-sm" onclick="${hasDiscount ? 'removeCoupon()' : 'applyCoupon()'}">${hasDiscount ? 'Hapus' : 'Pakai'}</button>
+                    </div>
+                    <div id="coupon-message" class="coupon-msg"></div>
+                </div>
+                
+                <button class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;" onclick="processCheckout(${finalTotal})">Checkout Pemesanan</button>
             </div>
         `;
+        summaryContainer.innerHTML = summaryHtml;
     }
 }
 
@@ -290,4 +322,80 @@ if (document.querySelector('a[href="/logout"]')) {
     activityEvents.forEach(event => {
         document.addEventListener(event, resetInactivityTimer, true);
     });
+}
+
+// --- COUPON ACTIONS ---
+function applyCoupon() {
+    const input = document.getElementById('coupon-input');
+    const msg = document.getElementById('coupon-message');
+    if (!input || !msg) return;
+    
+    const code = input.value.trim().toUpperCase();
+    if (code === 'PIALADUNIA2026') {
+        localStorage.setItem('cyber_brew_coupon', 'PIALADUNIA2026');
+        msg.className = 'coupon-msg success';
+        msg.textContent = 'Kupon berhasil diterapkan! Anda mendapatkan potongan 15%.';
+        setTimeout(() => {
+            renderCartPage();
+        }, 1000);
+    } else if (code === '') {
+        msg.className = 'coupon-msg error';
+        msg.textContent = 'Silakan masukkan kode kupon terlebih dahulu.';
+    } else {
+        msg.className = 'coupon-msg error';
+        msg.textContent = 'Kode kupon salah atau tidak berlaku.';
+    }
+}
+
+function removeCoupon() {
+    localStorage.removeItem('cyber_brew_coupon');
+    renderCartPage();
+}
+
+// --- WORLD CUP PREDICTIONS WIDGET ---
+function initPredictions() {
+    const predictions = JSON.parse(localStorage.getItem('cyber_brew_predictions') || '{}');
+    Object.keys(predictions).forEach(matchKey => {
+        const parts = matchKey.split('_vs_');
+        if (parts.length === 2) {
+            const team1 = parts[0];
+            const team2 = parts[1];
+            renderPredictionState(team1, team2, predictions[matchKey]);
+        }
+    });
+}
+
+function makePrediction(team1, team2, prediction) {
+    // Check if user is logged in by looking for logout button or active username
+    const logoutBtn = document.querySelector('a[href="/logout"]');
+    if (!logoutBtn) {
+        showNotification("Silakan login terlebih dahulu untuk membuat prediksi!", "warning");
+        return;
+    }
+    
+    const predictions = JSON.parse(localStorage.getItem('cyber_brew_predictions') || '{}');
+    const matchKey = `${team1}_vs_${team2}`;
+    predictions[matchKey] = prediction;
+    localStorage.setItem('cyber_brew_predictions', JSON.stringify(predictions));
+    
+    renderPredictionState(team1, team2, prediction);
+    
+    // Auto-grant the coupon in local storage to make it easy for them
+    localStorage.setItem('cyber_brew_coupon', 'PIALADUNIA2026');
+    
+    showNotification(`⚽ Prediksi berhasil! Anda menjagokan ${prediction}. Kode kupon PIALADUNIA2026 telah ditambahkan ke keranjang belanja Anda!`, 'success');
+}
+
+function renderPredictionState(team1, team2, prediction) {
+    const widgetId = `predict-widget-${team1.toLowerCase()}-${team2.toLowerCase()}`;
+    const widget = document.getElementById(widgetId);
+    if (!widget) return;
+    
+    widget.innerHTML = `
+        <div style="text-align: center; background-color: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary); padding: 0.8rem; border-radius: 6px; animation: fadeIn 0.4s ease-out;">
+            <p style="font-size: 0.85rem; font-weight: 600; color: var(--primary); margin-bottom: 0.3rem;">⚽ Prediksi Anda Disimpan!</p>
+            <p style="font-size: 0.8rem; color: var(--text-light);">Pilihan: <strong>${prediction}</strong></p>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Kupon <strong>PIALADUNIA2026</strong> otomatis aktif di keranjang!</p>
+        </div>
+    `;
 }
