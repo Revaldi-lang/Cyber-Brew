@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Initialize World Cup predictions if we are on the index page
-    if (document.getElementById('predict-widget-argentina-france') || document.getElementById('predict-widget-brazil-england')) {
+    if (document.getElementById('predict-widget-jordan-argentina') || document.getElementById('predict-widget-algeria-austria')) {
         initPredictions();
     }
 });
@@ -361,6 +361,14 @@ function initPredictions() {
             const team1 = parts[0];
             const team2 = parts[1];
             renderPredictionState(team1, team2, predictions[matchKey]);
+            
+            // Auto expand the card if prediction exists
+            const widgetId = `predict-widget-${team1.toLowerCase()}-${team2.toLowerCase()}`;
+            const widget = document.getElementById(widgetId);
+            if (widget) {
+                const parentCard = widget.closest('.sb-match-item');
+                if (parentCard) parentCard.classList.add('expanded');
+            }
         }
     });
 }
@@ -392,10 +400,24 @@ function renderPredictionState(team1, team2, prediction) {
     if (!widget) return;
     
     widget.innerHTML = `
-        <div style="text-align: center; background-color: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary); padding: 0.8rem; border-radius: 6px; animation: fadeIn 0.4s ease-out;">
+        <div style="text-align: center; background-color: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary); padding: 0.8rem; border-radius: 6px; animation: fadeIn 0.4s ease-out; margin-top: 0.4rem;">
             <p style="font-size: 0.85rem; font-weight: 600; color: var(--primary); margin-bottom: 0.3rem;">⚽ Prediksi Anda Disimpan!</p>
             <p style="font-size: 0.8rem; color: var(--text-light);">Pilihan: <strong>${prediction}</strong></p>
             <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Kupon <strong>PIALADUNIA2026</strong> otomatis aktif di keranjang!</p>
         </div>
     `;
+}
+
+// --- INTERACTIVE MATCH ACTIONS ---
+function togglePredictionPanel(element) {
+    element.classList.toggle('expanded');
+}
+
+function toggleFavorite(starElement) {
+    starElement.classList.toggle('active');
+    if (starElement.classList.contains('active')) {
+        starElement.textContent = '★';
+    } else {
+        starElement.textContent = '☆';
+    }
 }
